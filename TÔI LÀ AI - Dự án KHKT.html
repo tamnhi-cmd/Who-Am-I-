@@ -1,0 +1,828 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>TÔI LÀ AI? - Hành trình tìm lại mình giữa đám đông</title>
+
+  <!-- Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@300;400;600;700&family=Playfair+Display:wght@500;700&display=swap" rel="stylesheet">
+
+  <style>
+    /* =========================
+       THEME VARIABLES
+       ========================= */
+    :root{
+      --bg-a: #c7b7ff;   /* tím pastel */
+      --bg-b: #aef0f6;   /* xanh biển nhạt */
+      --bg-c: #ffd2ea;   /* hồng pastel */
+      --card: rgba(255,255,255,0.72);
+      --glass: rgba(255,255,255,0.10);
+      --accent: #6b21a8; /* tím đậm */
+      --accent-2: #db2777; /* hồng đậm */
+      --muted: #6b7280;
+      --text: #061826;
+      --shadow: rgba(6,8,20,0.12);
+    }
+
+    /* =========================
+       RESET & BASE
+       ========================= */
+    *{box-sizing:border-box; margin:0; padding:0}
+    html,body{height:100%}
+    body{
+      font-family: "Nunito", system-ui, -apple-system, "Segoe UI", Roboto, Arial;
+      color:var(--text);
+      min-height:100vh;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      padding:28px;
+      background: linear-gradient(135deg, var(--bg-a) 0%, var(--bg-b) 50%, var(--bg-c) 100%);
+      position:relative;
+      overflow:hidden;
+      -webkit-font-smoothing:antialiased;
+      -moz-osx-font-smoothing:grayscale;
+    }
+
+    /* Aurora moving overlay (soft blobs + particles) */
+    .aurora {
+      position:fixed;
+      inset:0;
+      pointer-events:none;
+      z-index:0;
+      background: transparent;
+    }
+
+    /* Particle canvas sits above aurora but below UI */
+    #particle-canvas {
+      position: fixed;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 1;
+      pointer-events: none;
+    }
+
+    /* App container */
+    .app {
+      width:100%;
+      max-width:980px;
+      z-index:2;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+    }
+
+    /* main card (now more open, centered) */
+    .card {
+      width:100%;
+      border-radius:20px;
+      padding:36px;
+      background: linear-gradient(180deg, rgba(255,255,255,0.78), rgba(255,255,255,0.66));
+      box-shadow: 0 18px 60px var(--shadow);
+      border: 1px solid rgba(255,255,255,0.45);
+      backdrop-filter: blur(8px) saturate(120%);
+      min-height:520px;
+      overflow:hidden;
+      position:relative;
+    }
+
+    /* Header - simplified and elegant */
+    .header {
+      display:flex;
+      align-items:flex-start;
+      gap:18px;
+      margin-bottom:18px;
+    }
+    .title-block {
+      display:flex;
+      flex-direction:column;
+      gap:6px;
+    }
+    .title-h1 {
+      font-family: "Playfair Display", serif;
+      font-size:22px;
+      font-weight:700;
+      color:var(--accent);
+      letter-spacing:0.2px;
+    }
+    .subtitle {
+      font-size:14px;
+      color:var(--muted);
+    }
+
+    /* central stage */
+    .stage {
+      display:flex;
+      gap:28px;
+      align-items:flex-start;
+      margin-top:6px;
+      flex-wrap:wrap;
+    }
+    .main {
+      flex:1 1 62%;
+      min-width:280px;
+    }
+    .side {
+      flex:0 0 34%;
+      min-width:220px;
+    }
+
+    /* opening quote (centered, typewriter) */
+    .quote-wrap {
+      padding:18px 10px 12px 10px;
+      margin-bottom:18px;
+    }
+    .typewriter {
+      display:inline-block;
+      font-size:18px;
+      font-weight:600;
+      color:var(--text);
+      font-family: "Playfair Display", serif;
+      white-space:nowrap;
+      overflow:hidden;
+      border-right: .12em solid rgba(6,24,38,0.5);
+      animation: typing 3.4s steps(42,end) 0.25s forwards, blink .8s step-end infinite;
+      max-width:100%;
+    }
+    @keyframes typing { from { width: 0; } to { width: 100%; } }
+    @keyframes blink { 50% { border-color: transparent; } }
+
+    /* subtle subtitle & call-to-action */
+    .cta {
+      margin-top:18px;
+      display:flex;
+      align-items:center;
+      gap:14px;
+    }
+    .btn {
+      background: linear-gradient(90deg, var(--accent), var(--accent-2));
+      color:white; padding:12px 20px; border-radius:18px; border:none; cursor:pointer; font-weight:700;
+      box-shadow: 0 18px 50px rgba(107,33,168,0.12);
+      transition: transform .2s ease, box-shadow .2s ease;
+      font-size:15px;
+    }
+    .btn:hover{ transform: translateY(-6px) scale(1.02); box-shadow: 0 32px 70px rgba(107,33,168,0.18) }
+    .btn.ghost { background: transparent; color:var(--muted); border:1px solid rgba(6,24,38,0.05); box-shadow:none; padding:10px 16px }
+
+    /* right side info */
+    .side .card-mini {
+      background: linear-gradient(180deg, rgba(255,255,255,0.6), rgba(255,255,255,0.45));
+      padding:14px;
+      border-radius:12px;
+      box-shadow: 0 8px 28px rgba(6,8,20,0.04);
+      border:1px solid rgba(255,255,255,0.35);
+      margin-bottom:12px;
+    }
+    .side .tag { color:var(--accent-2); font-weight:700; }
+
+    /* section slides (kept as earlier but restyled) */
+    .slide {
+      background: transparent;
+      border-radius:12px;
+      padding:0;
+      box-shadow:none;
+      min-height:0;
+      overflow:visible;
+      transition: opacity .45s ease, transform .45s cubic-bezier(.2,.9,.25,1);
+    }
+    .slide.hidden { display:none; }
+    .slide.enter { animation: slideIn .45s cubic-bezier(.2,.9,.25,1) both; }
+    @keyframes slideIn { from{ transform: translateY(12px) scale(.995); opacity:0 } to{ transform: translateY(0) scale(1); opacity:1 } }
+
+    /* content inside slides */
+    .panel {
+      background: linear-gradient(180deg, rgba(255,255,255,0.9), rgba(255,255,255,0.75));
+      padding:18px; border-radius:12px; box-shadow: 0 12px 40px rgba(6,8,20,0.04);
+      border:1px solid rgba(6,8,20,0.03);
+    }
+
+    .choices{ display:flex; flex-direction:column; gap:12px; margin-top:8px }
+    .choice-btn{
+      background: linear-gradient(90deg, rgba(107,33,168,0.06), rgba(219,39,119,0.04));
+      border: none; padding:12px 16px; border-radius:12px; color:var(--text);
+      font-weight:700; cursor:pointer; text-align:left; transition: transform .12s ease, box-shadow .12s, background .2s;
+      box-shadow: 0 8px 26px rgba(6,8,20,0.03);
+    }
+    .choice-btn:hover{
+      transform: translateY(-6px);
+      box-shadow: 0 18px 36px rgba(107,33,168,0.08);
+      background: linear-gradient(90deg, rgba(107,33,168,0.10), rgba(219,39,119,0.06));
+    }
+    .choice-btn.selected{
+      outline: 3px solid rgba(107,33,168,0.10);
+      transform: scale(1.02);
+      background: linear-gradient(90deg, rgba(107,33,168,0.16), rgba(219,39,119,0.10));
+    }
+
+    .feedback{
+      margin-top:12px; padding:12px 14px; border-radius:10px;
+      background: linear-gradient(90deg, rgba(165,243,252,0.06), rgba(255,255,255,0.02));
+      color: #064e47; font-style:italic; border-left:4px solid rgba(58,167,184,0.12);
+      box-shadow: 0 6px 20px rgba(6,8,20,0.02);
+    }
+
+    textarea, input[type="text"]{
+      width:100%; min-height:64px; resize:vertical; padding:12px; border-radius:12px;
+      border:1px solid rgba(6,8,20,0.04); font-size:15px;
+      background: rgba(255,255,255,0.88);
+      box-shadow: inset 0 6px 18px rgba(6,8,20,0.02);
+    }
+    .small { font-size:13px; color:var(--muted); margin-top:8px; }
+
+    .progress{
+      width:100%; height:10px; background:linear-gradient(90deg, rgba(255,255,255,0.6), rgba(255,255,255,0.3)); border-radius:16px; overflow:hidden; margin-top:14px;
+    }
+    .progress > i{ display:block; height:100%; background:linear-gradient(90deg,var(--bg-b),var(--bg-c)); width:0%; transition:width .45s ease; }
+
+    .result-card{
+      text-align:left; padding:18px; border-radius:12px;
+      background: linear-gradient(180deg, rgba(255,255,255,0.92), rgba(255,255,255,0.82));
+      box-shadow: 0 12px 40px rgba(6,8,20,0.04);
+    }
+    .tag{ font-weight:700; color:var(--accent-2) }
+
+    /* responsive */
+    @media (max-width:900px){
+      .stage{ flex-direction:column; }
+      .side{ order:2 }
+      .main{ order:1 }
+      .card { padding:20px; min-height:640px; }
+    }
+
+    /* small animation helper for fade-out (when navigating; JS may use) */
+    .fade-out { animation: fadeOut .45s ease forwards; }
+    @keyframes fadeOut { from { opacity:1; } to { opacity:0; transform: translateY(-6px) } }
+    /* Cho phép cuộn trong khung nội dung từng slide */
+.slide .panel {
+  max-height: 90vh;          /* Giới hạn chiều cao tối đa = 90% chiều cao màn hình */
+  overflow-y: auto;          /* Bật cuộn dọc khi nội dung dài hơn khung */
+  padding-right: 10px;       /* Thêm tí khoảng trống cho đẹp */
+  scroll-behavior: smooth;   /* Cuộn mượt */
+}
+
+  </style>
+</head>
+<body>
+  <!-- Aurora decorative layer -->
+  <div class="aurora" aria-hidden="true">
+    <!-- soft moving colored shapes via SVG for richer aurora layering -->
+    <svg style="position:absolute; inset: -20% -20% auto auto; width:160%; height:140%; z-index:0; pointer-events:none;" viewBox="0 0 800 400" preserveAspectRatio="xMidYMid slice">
+      <defs>
+        <linearGradient id="AG" x1="0" x2="1"><stop offset="0" stop-color="#c7b7ff"/><stop offset="0.5" stop-color="#aef0f6"/><stop offset="1" stop-color="#ffd2ea"/></linearGradient>
+        <filter id="gblur"><feGaussianBlur stdDeviation="30" /></filter>
+      </defs>
+      <g opacity="0.28" filter="url(#gblur)">
+        <ellipse cx="160" cy="120" rx="220" ry="90" fill="url(#AG)" />
+        <ellipse cx="620" cy="70" rx="240" ry="110" fill="url(#AG)" />
+        <ellipse cx="460" cy="320" rx="300" ry="120" fill="url(#AG)" />
+      </g>
+    </svg>
+  </div>
+
+  <!-- Particle canvas (glowing dots) -->
+  <canvas id="particle-canvas"></canvas>
+
+  <div class="app">
+    <div class="card" role="main" aria-labelledby="main-title">
+
+      <!-- Header -->
+      <div class="header">
+        <div class="title-block">
+          <div id="main-title" class="title-h1">TÔI LÀ AI? - Hành trình tìm lại mình giữa đám đông</div>
+          <div class="subtitle">Khi đèn tắt, bạn là ai?</div>
+        </div>
+        <!-- right small hint -->
+        <div style="margin-left:auto; color:var(--muted); font-size:13px;">Dự án: “Đồng phục tính cách”: Áp lực hòa nhập và khủng hoảng bản sắc cá nhân ở học sinh Trường THPT Nguyễn Trãi, thành phố Đà Nẵng.
+</div>
+      </div>
+
+      <!-- Stage -->
+      <div class="stage">
+
+        <!-- Main area (intro slide visible initially) -->
+        <div class="main">
+          <section id="slide-intro" class="slide">
+            <div class="panel">
+              <div class="quote-wrap center">
+                <span class="typewriter">“Bạn đã sẵn sàng để đánh thức bản sắc cá nhân của chính mình ?”</span>
+              </div>
+
+              <div style="display:flex; gap:18px; align-items:center; justify-content:flex-start; flex-wrap:wrap;">
+                <button class="btn" onclick="goTo('slide-1')">Bắt đầu hành trình của tôi</button>
+                <button class="btn ghost" onclick="goTo('slide-1')">Khám phá ngay</button>
+              </div>
+
+              <div class="progress" aria-hidden="true" style="margin-top:22px;"><i style="width:5%"></i></div>
+            </div>
+          </section>
+
+          <!-- Slide 1 (Nhận diện) -->
+          <section id="slide-1" class="slide hidden">
+            <div class="panel">
+              <h2 style="font-family:Playfair Display; color:var(--accent); margin-bottom:8px;">Chặng 1 - Nhận diện bản thân</h2>
+              <p class="small">Chọn 1 điều khiến bạn cảm thấy "là chính mình" nhất (có thể chọn nhiều, tối đa 3).</p>
+
+              <div style="margin-top:12px" class="choices" id="choiceList">
+                <button class="choice-btn" data-key="creative" onclick="toggleChoice(this)">Khi mình sáng tạo</button>
+                <button class="choice-btn" data-key="help" onclick="toggleChoice(this)">Khi mình giúp đỡ người khác</button>
+                <button class="choice-btn" data-key="brave" onclick="toggleChoice(this)">Khi mình dám nói điều mình nghĩ</button>
+                <button class="choice-btn" data-key="goal" onclick="toggleChoice(this)">Khi mình hoàn thành một mục tiêu</button>
+                <button class="choice-btn" data-key="same" onclick="toggleChoice(this)">Khi mình giống với mọi người</button>
+              </div>
+
+              <div id="feedbackBox" class="feedback" style="display:none"></div>
+
+              <div style="margin-top:14px; display:flex; gap:12px;">
+                <button class="btn" onclick="goTo('slide-1b')">Tiếp tục</button>
+                <button class="btn ghost" onclick="goTo('slide-intro')">Quay lại</button>
+              </div>
+
+              <div class="progress" style="margin-top:18px;"><i style="width:25%"></i></div>
+            </div>
+          </section>
+
+          <!-- Slide 1B (viết cảm xúc) -->
+          <section id="slide-1b" class="slide hidden">
+            <div class="panel">
+              <h2 style="font-family:Playfair Display; color:var(--accent); margin-bottom:8px;">Viết nhanh 3 dòng cảm xúc</h2>
+              <p class="small">Điền nhanh - không cần quá dài, điều đầu tiên hiện lên trong đầu là được.</p>
+
+              <div style="margin-top:12px;">
+                <p style="font-weight:700">1. <small class="small">Tôi tự tin nhất khi...</small></p>
+                <textarea id="ans1" placeholder="Ví dụ: Khi tôi vẽ/ Khi tôi trình bày..."></textarea>
+
+                <p style="margin-top:12px; font-weight:700">2. <small class="small">Tôi thấy lạc lõng khi...</small></p>
+                <textarea id="ans2" placeholder="Ví dụ: Khi mọi người không hiểu tôi..."></textarea>
+
+                <p style="margin-top:12px; font-weight:700">3. <small class="small">Nếu ai hỏi tôi là ai, tôi sẽ nói rằng...</small></p>
+                <textarea id="ans3" placeholder="Viết 1–2 câu ngắn gọn"></textarea>
+
+                <div style="margin-top:14px; display:flex; gap:12px;">
+                  <button class="btn" onclick="completeStage1()">Hoàn thành</button>
+                  <button class="btn ghost" onclick="goTo('slide-1')">Quay lại</button>
+                </div>
+              </div>
+
+              <div class="progress" style="margin-top:18px;"><i style="width:40%"></i></div>
+            </div>
+          </section>
+
+          <!-- Slide 2 -->
+          <section id="slide-2" class="slide hidden">
+            <div class="panel">
+              <h2 style="font-family:Playfair Display; color:var(--accent); margin-bottom:8px;">Chặng 2 - Áp lực hòa nhập (The Mask)</h2>
+              <p class="small">Nhận diện khi nào bạn “mặc mặt nạ” để hòa nhập.</p>
+
+              <div style="margin-top:12px;">
+                <p style="font-weight:700">Tình huống - “My favourite song”</p>
+                <p class="small">Bạn rất yêu thích một bài hát, tuy nhiên thể loại đó không phù hợp với một số bạn, và theo họ bạn thật lập dị. Bạn sẽ:</p>
+
+                <div class="choices" style="margin-top:8px">
+                  <button class="choice-btn" data-key="mask_1" onclick="selectSingle('mask','1',this)">1️⃣ Không nghe nữa. </button>
+                  <button class="choice-btn" data-key="mask_2" onclick="selectSingle('mask','2',this)">2️⃣ Mặc dù người khác nói gì, mình vẫn nghe vì đó là gu âm nhạc của mình.</button>
+                  <button class="choice-btn" data-key="mask_3" onclick="selectSingle('mask','3',this)">3️⃣ Cười trừ, nhưng trong lòng hơi tổn thương.</button>
+                </div>
+
+                <div id="maskFeedback" class="feedback" style="display:none"></div>
+
+                <hr style="margin:18px 0; border:none; border-top:1px dashed rgba(6,8,20,0.04)">
+
+                <p style="font-weight:700">Chiếc mặt nạ xã hội</p>
+                <div class="choices" style="margin-top:8px">
+                  <button class="choice-btn" data-key="m1" onclick="selectSingle('face','m1',this)">Mặt nạ ‘vui vẻ dù mệt mỏi’</button>
+                  <button class="choice-btn" data-key="m2" onclick="selectSingle('face','m2',this)">Mặt nạ ‘hoàn hảo để được khen’</button>
+                  <button class="choice-btn" data-key="m3" onclick="selectSingle('face','m3',this)">Mặt nạ ‘im lặng để không bị chú ý’</button>
+                  <button class="choice-btn" data-key="m4" onclick="selectSingle('face','m4',this)">Mình không đeo mặt nạ nào cả</button>
+                </div>
+
+                <div id="faceFeedback" class="feedback" style="display:none"></div>
+
+                <div style="margin-top:14px; display:flex; gap:12px;">
+                  <button class="btn" onclick="goTo('slide-3')">Tiếp tục đến Chặng 3</button>
+                  <button class="btn ghost" onclick="goTo('slide-1b')">Quay lại</button>
+                </div>
+              </div>
+
+              <div class="progress" style="margin-top:18px;"><i style="width:70%"></i></div>
+            </div>
+          </section>
+
+          <!-- Slide 3 -->
+          <section id="slide-3" class="slide hidden">
+            <div class="panel">
+              <h2 style="font-family:Playfair Display; color:var(--accent); margin-bottom:8px;">Chặng 3 - Khẳng định giá trị (I AM ENOUGH)</h2>
+              <p class="small">Thực hành ngôn ngữ bản sắc & chọn cam kết</p>
+
+              <div style="margin-top:12px;">
+                <p style="font-weight:700">Hoàn thành câu:</p>
+                <p class="small">“Mình tôn trọng ý kiến của cậu, nhưng ________.”</p>
+                <input id="fill1" placeholder="ví dụ: mình cần giữ quan điểm của mình" style="margin-top:8px;">
+
+                <p class="small" style="margin-top:12px">“Mình thấy vui khi được là chính mình vì ________.”</p>
+                <input id="fill2" placeholder="ví dụ: mình cảm thấy tự do" style="margin-top:8px;">
+
+                <p class="small" style="margin-top:12px">“Điều này ở bản thân mình sẽ không thay đổi: ________.”</p>
+                <input id="fill3" placeholder="ví dụ: lòng tốt" style="margin-top:8px">
+
+                <div style="margin-top:14px">
+                  <p style="font-weight:700">Chọn 1 cam kết để khép lại hành trình:</p>
+                  <div class="choices" style="margin-top:8px">
+                    <button class="choice-btn" data-key="c1" onclick="selectCommit('c1',this)">✅ Tôi sẽ sống thật với chính mình.</button>
+                    <button class="choice-btn" data-key="c2" onclick="selectCommit('c2',this)">✅ Tôi sẽ lắng nghe cảm xúc của bản thân.</button>
+                    <button class="choice-btn" data-key="c3" onclick="selectCommit('c3',this)">✅ Tôi sẽ tôn trọng sự khác biệt của người khác và của chính tôi.</button>
+                  </div>
+                </div>
+
+                <div style="margin-top:14px; display:flex; gap:12px;">
+                  <button class="btn" onclick="finishGame()">Hoàn tất & Nhận thông điệp</button>
+                  <button class="btn ghost" onclick="goTo('slide-2')">Quay lại</button>
+                </div>
+              </div>
+
+              <div class="progress" style="margin-top:18px;"><i style="width:90%"></i></div>
+            </div>
+          </section>
+
+          <!-- Slide end -->
+          <section id="slide-end" class="slide hidden">
+            <div class="panel">
+              <h2 style="font-family:Playfair Display; color:var(--accent); margin-bottom:8px;">Hành trình hoàn tất ✨</h2>
+              <p class="small">“Đồng phục có thể giống nhau, nhưng tâm hồn thì không ai giống ai.”</p>
+
+              <div id="resultSummary" class="result-card" style="margin-top:12px"></div>
+
+              <div style="margin-top:14px; display:flex; gap:12px;">
+                <button class="btn" onclick="restart()">Chơi lại</button>
+                <button class="btn ghost" onclick="goTo('slide-3')">Quay lại</button>
+              </div>
+
+              <div class="progress" style="margin-top:18px;"><i style="width:100%"></i></div>
+            </div>
+          </section>
+        </div>
+
+        <!-- Right side (context / hint) -->
+        <div class="side">
+          <div class="card-mini">
+            <div class="tag">REMINDER:</div>
+            <div style="margin-top:6px; font-weight:700; color:var(--accent)">Remember this </div>
+            <p class="small" style="margin-top:8px">No one is you, and that is your superpower. 💖</p>
+          </div>
+
+          <div class="card-mini">
+            <div class="tag">Mẹo</div>
+            <p class="small" style="margin-top:8px">Trung thực với bản thân - không có đáp án đúng/sai. Bạn có thể chụp màn hình kết quả để lưu lại.</p>
+          </div>
+        </div>
+
+      </div> <!-- stage -->
+
+    </div> <!-- card -->
+  </div> <!-- app -->
+
+  <!-- =========================
+       SCRIPT: UI logic kept (adapted safely)
+       ========================= -->
+  <script>
+    /* -------------------------
+       Particle effect (small glowing dots) 
+       Simple lightweight canvas particles for aurora mood.
+       ------------------------- */
+    (function initParticles(){
+      const canvas = document.getElementById('particle-canvas');
+      if(!canvas) return;
+      const ctx = canvas.getContext('2d');
+      let w=canvas.width=innerWidth;
+      let h=canvas.height=innerHeight;
+      window.addEventListener('resize', ()=> { w=canvas.width=innerWidth; h=canvas.height=innerHeight; });
+
+      const colors = ["rgba(255,255,255,0.75)","rgba(255,240,248,0.6)","rgba(165,243,252,0.5)","rgba(139,92,246,0.35)"];
+      const particles = [];
+      const N = Math.max(24, Math.floor((w*h)/90000)); // density responsive
+      for(let i=0;i<N;i++){
+        particles.push({
+          x: Math.random()*w,
+          y: Math.random()*h,
+          r: 1 + Math.random()*3,
+          vx: (Math.random()-0.5)*0.15,
+          vy: (Math.random()-0.5)*0.15,
+          alpha: 0.05 + Math.random()*0.5,
+          c: colors[Math.floor(Math.random()*colors.length)],
+        });
+      }
+      function draw(){
+        ctx.clearRect(0,0,w,h);
+        for(const p of particles){
+          p.x += p.vx;
+          p.y += p.vy;
+          p.alpha += (Math.random()-0.5)*0.02;
+          if(p.alpha < 0.02) p.alpha = 0.02;
+          if(p.alpha > 0.9) p.alpha = 0.9;
+          if(p.x < -20) p.x = w + 20;
+          if(p.x > w + 20) p.x = -20;
+          if(p.y < -20) p.y = h + 20;
+          if(p.y > h + 20) p.y = -20;
+
+          ctx.beginPath();
+          const grad = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, p.r*6);
+          grad.addColorStop(0, p.c.replace(/[\d\.]+\)$/,'0.9)'));
+          grad.addColorStop(0.4, p.c.replace(/[\d\.]+\)$/,'0.45)'));
+          grad.addColorStop(1, p.c.replace(/[\d\.]+\)$/,'0)'));
+          ctx.fillStyle = grad;
+          ctx.fillRect(p.x - p.r*6, p.y - p.r*6, p.r*12, p.r*12);
+        }
+        requestAnimationFrame(draw);
+      }
+      draw();
+    })();
+
+    /* -------------------------
+       State lưu trữ lựa chọn (kept from original)
+       ------------------------- */
+    const state = {
+      picks: [],          // từ slide1 (max 3 keys)
+      ans1: "", ans2: "", ans3: "",
+      maskChoice: null,   // slide2 (mask situation)
+      faceMask: null,     // slide2 (social mask)
+      fill1: "", fill2: "", fill3: "",
+      commit: null
+    };
+
+    // helper: show a slide by id (keeps original logic)
+    function goTo(id){
+      // hide all slides
+      document.querySelectorAll('.slide').forEach(s=>{
+        s.classList.add('hidden');
+        s.classList.remove('enter','exit','fade-out');
+      });
+      // show requested
+      const el = document.getElementById(id);
+      if (!el) return;
+      el.classList.remove('hidden');
+      // trigger enter animation
+      void el.offsetWidth;
+      el.classList.add('enter');
+
+      // update progress bar visual (kept original widths)
+      const progressBars = document.querySelectorAll('.progress > i');
+      let width = 5;
+      if (id==='slide-intro') width=5;
+      if (id==='slide-1') width=25;
+      if (id==='slide-1b') width=40;
+      if (id==='slide-2') width=70;
+      if (id==='slide-3') width=90;
+      if (id==='slide-end') width=100;
+      progressBars.forEach(pb => pb.style.width = width + '%');
+
+      // update small UI states
+      updatePickedCount();
+      updateMaskFeedbackUI();
+      updateFaceFeedbackUI();
+      // smooth scroll to top of card for mobile
+      document.querySelector('.card')?.scrollIntoView({behavior:'smooth', block:'start'});
+    }
+
+    /* -------------------------
+       AUDIO control (no audio element present; safe no-op)
+       ------------------------- */
+    const audio = document.getElementById('bg-audio'); // null
+    let audioPlaying = false;
+    function toggleAudio(){
+      if(!audio) return; // intentionally no-op
+      if(audioPlaying){ audio.pause(); audioPlaying=false; }
+      else { audio.play().catch(()=>{}); audioPlaying=true; }
+    }
+
+    /* -------------------------
+       Choice toggling (slide1) - chọn tối đa 3
+       ------------------------- */
+    function toggleChoice(btn){
+      const key = btn.getAttribute('data-key');
+      const idx = state.picks.indexOf(key);
+      if (idx>-1){
+        state.picks.splice(idx,1);
+        btn.classList.remove('selected');
+      } else {
+        if (state.picks.length >= 3){
+          // flash small warning
+          btn.animate([{ transform:'translateY(0)' },{ transform:'translateY(-6px)' },{ transform:'translateY(0)' }],{ duration:260 });
+          return;
+        }
+        state.picks.push(key);
+        btn.classList.add('selected');
+      }
+      updatePickedCount();
+      showFeedbackForPicks();
+    }
+    function updatePickedCount(){
+      const el = document.getElementById('pickedCount');
+      if(el) el.innerText = state.picks.length;
+    }
+
+    function showFeedbackForPicks(){
+      const fb = document.getElementById('feedbackBox');
+      if(!fb) return;
+      if(state.picks.length===0){ fb.style.display='none'; fb.innerText=''; return; }
+
+      if (state.picks.includes('same') && state.picks.length===1){
+        fb.style.display='block';
+        fb.innerText = "Cảm giác an toàn đôi khi khiến ta rời xa chính mình.";
+        return;
+      }
+      if (state.picks.includes('creative')){
+        fb.style.display='block';
+        fb.innerText = "Tuyệt vời! Sáng tạo chính là bản sắc - là dấu vân tay tâm hồn.";
+        return;
+      }
+      if (state.picks.includes('help')){
+        fb.style.display='block';
+        fb.innerText = "Giúp đỡ người khác cũng là một cách thể hiện giá trị bản thân.";
+        return;
+      }
+      if (state.picks.includes('brave')){
+        fb.style.display='block';
+        fb.innerText = "Thật đáng quý! Dám nói ra điều mình nghĩ là biểu hiện của tự tin và bản lĩnh.";
+        return;
+      }
+      if (state.picks.includes('goal')){
+        fb.style.display='block';
+        fb.innerText = "Hoàn thành mục tiêu là niềm tự hào - nhưng đừng quên tận hưởng hành trình.";
+        return;
+      }
+      fb.style.display='block';
+      fb.innerText = "Bạn đã chọn những điều quan trọng - tiếp tục viết cảm xúc để hiểu sâu hơn nhé.";
+    }
+
+    /* -------------------------
+       Slide1b completion
+       ------------------------- */
+    function completeStage1() {
+  try {
+    const a1 = document.getElementById('ans1');
+    const a2 = document.getElementById('ans2');
+    const a3 = document.getElementById('ans3');
+
+    // 🔒 Mã hóa nội dung để tránh lỗi ký tự khi gõ tiếng Việt
+    state.ans1 = a1 ? encodeURIComponent(a1.value.trim()) : "";
+    state.ans2 = a2 ? encodeURIComponent(a2.value.trim()) : "";
+    state.ans3 = a3 ? encodeURIComponent(a3.value.trim()) : "";
+
+    // 🧩 Kiểm tra người dùng đã chọn gì chưa
+    if (state.picks && state.picks.length === 0) {
+      if (!confirm("Bạn chưa chọn mục nào trong 'Bản đồ cái tôi'. Có muốn tiếp tục không?")) return;
+    }
+
+    // ✅ Chuyển sang slide kế tiếp (đảm bảo không crash)
+    goTo('slide-2');
+  } catch (err) {
+    console.error("Lỗi khi xử lý tiếng Việt hoặc chuyển slide:", err);
+    alert("Đã xảy ra lỗi khi xử lý nội dung. Hãy thử lại nhé 💫");
+  }
+}
+
+    /* -------------------------
+       Slide2 interactions (single-select with feedback)
+       ------------------------- */
+    function selectSingle(group, val, btn){
+      if (group==='mask'){
+        state.maskChoice = val;
+        document.querySelectorAll(".choice-btn[data-key^='mask']").forEach(el=>el.classList.remove('selected'));
+        btn.classList.add('selected');
+        const fb = document.getElementById('maskFeedback');
+        if(fb){ fb.style.display='block'; 
+          if(val==='1') fb.innerText = "Bạn vừa đánh đổi sự thoải mái lấy sự chấp nhận - điều đó có đáng không?";
+          if(val==='2') fb.innerText = "Một lựa chọn mạnh mẽ! Sống thật là bước đầu để giữ bản sắc.";
+          if(val==='3') fb.innerText = "Không sao cả, đôi khi chúng ta đều cần được thấu hiểu - quan trọng là đừng quên mình thích gì.";
+        }
+      }
+      if (group==='face'){
+        state.faceMask = val;
+        document.querySelectorAll(".choice-btn[data-key^='m']").forEach(el=>el.classList.remove('selected'));
+        btn.classList.add('selected');
+        const fb = document.getElementById('faceFeedback');
+        if(fb){ fb.style.display='block'; fb.innerText = "Không ai có thể che giấu mãi phía sau một chiếc mặt nạ. Đôi khi, dũng cảm là dám đối diện với chính mình."; }
+      }
+    }
+
+    function updateMaskFeedbackUI(){
+      if(state.maskChoice){
+        const fb = document.getElementById('maskFeedback');
+        if(fb) fb.style.display='block';
+      }
+    }
+    function updateFaceFeedbackUI(){
+      if(state.faceMask){
+        const fb = document.getElementById('faceFeedback');
+        if(fb) fb.style.display='block';
+      }
+    }
+
+    /* -------------------------
+       Slide3: commits & fills
+       ------------------------- */
+    function selectCommit(key, btn){
+      state.commit = key;
+      document.querySelectorAll('.choice-btn[data-key^="c"]').forEach(el=>el.classList.remove('selected'));
+      btn.classList.add('selected');
+    }
+
+    function finishGame(){
+      const f1 = document.getElementById('fill1');
+      const f2 = document.getElementById('fill2');
+      const f3 = document.getElementById('fill3');
+      state.fill1 = f1 ? f1.value.trim() : "";
+      state.fill2 = f2 ? f2.value.trim() : "";
+      state.fill3 = f3 ? f3.value.trim() : "";
+
+      if(!state.commit){
+        if(!confirm("Bạn chưa chọn cam kết. Có muốn tiếp tục mà không chọn không?")) return;
+      }
+      buildSummary();
+      goTo('slide-end');
+    }
+
+    function buildSummary(){
+      const el = document.getElementById('resultSummary');
+      if(!el) return;
+      const pickMap = {
+        creative: "Khi mình sáng tạo",
+        help: "Khi mình giúp đỡ người khác",
+        brave: "Khi mình dám nói điều mình nghĩ",
+        goal: "Khi mình hoàn thành một mục tiêu",
+        same: "Khi mình giống với mọi người"
+      };
+      const picksText = state.picks.length ? state.picks.map(k=>pickMap[k]||k).join(' • ') : "Không chọn mục nào";
+      const maskMap = { '1':'Không nghe nữa.', '2':'Mặc dù người khác nói gì, mình vẫn nghe vì đó là gu âm nhạc của mình.', '3':'Cười trừ, nhưng trong lòng hơi tổn thương.' };
+      const faceMap = { m1:'Vui vẻ dù mệt mỏi', m2:'Hoàn hảo để được khen', m3:'Im lặng để không bị chú ý', m4:'Không đeo mặt nạ' };
+      const commitMap = { c1:'Sống thật với chính mình', c2:'Lắng nghe cảm xúc của bản thân', c3:'Tôn trọng khác biệt' };
+
+      el.innerHTML = `
+        <h3 style="margin-top:0; font-family:Playfair Display; color:var(--accent)">Kết quả hành trình của bạn</h3>
+        <p><strong class="tag">Bản đồ cái tôi:</strong> ${picksText}</p>
+        <p><strong class="tag">Bạn viết:</strong></p>
+        <ul>
+          <li><em>Tôi tự tin nhất khi:</em> ${state.ans1 || '<span style="color:#999">Không ghi</span>'}</li>
+          <li><em>Tôi thấy lạc lõng khi:</em> ${state.ans2 || '<span style="color:#999">Không ghi</span>'}</li>
+          <li><em>Nói tôi là ai:</em> ${state.ans3 || '<span style="color:#999">Không ghi</span>'}</li>
+        </ul>
+        <p><strong class="tag">Tình huống bài hát:</strong> ${ state.maskChoice ? maskMap[state.maskChoice] : '<span style="color:#999">Chưa trả lời</span>' }</p>
+        <p><strong class="tag">Mặt nạ xã hội:</strong> ${ state.faceMask ? faceMap[state.faceMask] : '<span style="color:#999">Chưa trả lời</span>' }</p>
+        <p><strong class="tag">Ngôn ngữ bản sắc:</strong></p>
+        <ul>
+          <li>${ state.fill1 || '<span style="color:#999">Không ghi</span>' }</li>
+          <li>${ state.fill2 || '<span style="color:#999">Không ghi</span>' }</li>
+          <li>${ state.fill3 || '<span style="color:#999">Không ghi</span>' }</li>
+        </ul>
+        <p><strong class="tag">Cam kết bạn chọn:</strong> ${ state.commit ? commitMap[state.commit] : '<span style="color:#999">Không chọn</span>' }</p>
+
+        <hr style="margin:12px 0; border:none; border-top:1px dashed rgba(6,8,20,0.04)">
+        <p style="font-weight:700; color:var(--accent)">“Bạn không cần phải hòa tan để được yêu thích. Bản sắc của bạn chính là món quà độc nhất mà thế giới ban tặng.”</p>
+      `;
+    }
+
+    function restart(){
+      state.picks = []; state.ans1=''; state.ans2=''; state.ans3=''; state.maskChoice=null; state.faceMask=null;
+      state.fill1=''; state.fill2=''; state.fill3=''; state.commit=null;
+      document.querySelectorAll('.choice-btn').forEach(b=>b.classList.remove('selected'));
+      const els = document.querySelectorAll('textarea, input');
+      els.forEach(e=> e.value = '');
+      const fb = document.getElementById('feedbackBox').innerHTML=decodeURIComponent(localStorage.getItem("feedbackBox")); if(fb) fb.style.display='none';
+      const mf = document.getElementById('maskFeedback'); if(mf) mf.style.display='none';
+      const ff = document.getElementById('faceFeedback'); if(ff) ff.style.display='none';
+      goTo('slide-intro');
+    }
+
+    // init: open intro
+    goTo('slide-intro');
+
+    // Accessibility: allow arrow keys to move between slides
+    document.addEventListener('keydown', (e)=>{
+      const current = [...document.querySelectorAll('.slide')].find(s=>!s.classList.contains('hidden'));
+      if(!current) return;
+      if(e.key === 'ArrowRight'){
+        if(current.id==='slide-intro') goTo('slide-1');
+        else if(current.id==='slide-1') goTo('slide-1b');
+        else if(current.id==='slide-1b') goTo('slide-2');
+        else if(current.id==='slide-2') goTo('slide-3');
+        else if(current.id==='slide-3') goTo('slide-end');
+      }
+      if(e.key === 'ArrowLeft'){
+        if(current.id==='slide-1') goTo('slide-intro');
+        else if(current.id==='slide-1b') goTo('slide-1');
+        else if(current.id==='slide-2') goTo('slide-1b');
+        else if(current.id==='slide-3') goTo('slide-2');
+        else if(current.id==='slide-end') goTo('slide-3');
+      }
+    });
+  </script>
+  <script>
+  // Cho phép gõ tiếng Việt có dấu, kể cả khi script khác can thiệp bàn phím
+  document.querySelectorAll("input, textarea").forEach(el => {
+    el.addEventListener("keydown", e => e.stopPropagation());
+    el.addEventListener("keypress", e => e.stopPropagation());
+  });
+</script>
+</body>
+</html>
